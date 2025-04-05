@@ -1,56 +1,45 @@
-local microphoneEnabled   = true
-local isCurrentlySpeaking = false
-local voiceDistance = nil
-local runLoop 		= true
+-- Globals
+-- The variables below are accessable from every client script and need to be updated if you want to implement your own voice system.
+MicrophoneEnabled = true
+IsCurrentlySpeaking = false
+VoiceDistance = nil
 
-RegisterNetEvent('SaltyChat_MicStateChanged')
-AddEventHandler('SaltyChat_MicStateChanged', function(IsMicrophoneMuted)
-	microphoneEnabled = not IsMicrophoneMuted
-end)
+-- Local Loop variable, doesn't need to be set.
+local RunLoop = true
 
-RegisterNetEvent('SaltyChat_TalkStateChanged')
-AddEventHandler('SaltyChat_TalkStateChanged', function(isTalking)
-	isCurrentlySpeaking = isTalking
-end) 
-
-RegisterNetEvent('SaltyChat_VoiceRangeChanged')
-AddEventHandler('SaltyChat_VoiceRangeChanged', function(voiceRange)
-    voiceDistance = voiceRange
-end)
+-- Register events and start voice system.
+RegisterVoiceSystemEvents()
+InitVoiceSystem()
 
 Citizen.CreateThread(function()
-    voiceDistance = exports["saltychat"]:GetVoiceRange()
-
     while true do
         Citizen.Wait(100)
 
-		if runLoop then
+		if RunLoop then
 			SendNUIMessage({
 				action = "updateStatusHud",
-				show = not IsRadarHidden(),          
-				voiceRange = (microphoneEnabled and tostring(voiceDistance) .. Config.MeterText) or Config.MicOffText,
-                micEnabled = microphoneEnabled
+				show = not IsRadarHidden(),    
+				voiceRange = (MicrophoneEnabled and (VoiceDistance and tostring(VoiceDistance) or "?") .. Config.MeterText) or Config.MicOffText,
+                micEnabled = MicrophoneEnabled
             })
 
 			if not IsRadarHidden() then
 				SendNUIMessage({
 					action     = "updatespeech",
-					speaking   = isCurrentlySpeaking,
-                    micEnabled = microphoneEnabled
+					speaking   = IsCurrentlySpeaking,
+                    micEnabled = MicrophoneEnabled
 				})
 			end
 		end
     end
 end)
 
-RegisterNetEvent("voice_hud:client:enableHud")
-AddEventHandler("voice_hud:client:enableHud", function()
-	runLoop = true
-	SendNUIMessage({ show = runLoop })
+RegisterNetEvent("voice_hud:client:enableHud", function()
+	RunLoop = true
+	SendNUIMessage({ show = RunLoop })
 end)
 
-RegisterNetEvent("voice_hud:client:disableHud")
-AddEventHandler("voice_hud:client:disableHud", function()
-	runLoop = false
-	SendNUIMessage({ show = runLoop })
+RegisterNetEvent("voice_hud:client:disableHud", function()
+	RunLoop = false
+	SendNUIMessage({ show = RunLoop })
 end)
