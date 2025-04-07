@@ -1,6 +1,5 @@
 # RedM Voice Hud v1.0
 
-Voice Hud now does autodiscover, which voice system is running. (PMA-Voice, Saltychat or YACA)
 Note: If you use YACA, you have to delete the line "provide 'saltychat'" in yaca-voice/fxmanifest.lua on your server otherwise the voice system will not be discovered correctly.
 
 A simple redm voice hud.
